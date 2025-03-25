@@ -87,6 +87,8 @@ func NewDefaultReporter(
 				var msg string
 				if cur := chErr.current; cur != nil {
 					msg = cur.Error()
+				} else {
+					msg = "↓"
 				}
 
 				lines = append(lines, &linkLine{
