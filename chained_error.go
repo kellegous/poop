@@ -47,14 +47,19 @@ func isChainedError(err error) bool {
 	return ok
 }
 
+// New creates a leaf error with caller information. This is the poop equivalent to `errors.New`.
 func New(message string) error {
 	return newChainedError(nil, errors.New(message), callerFunc())
 }
 
+// Newf is identical to New, but allows formatted messages.
 func Newf(format string, args ...interface{}) error {
 	return newChainedError(nil, fmt.Errorf(format, args...), callerFunc())
 }
 
+// Chain chains the given error. This is the most common way to chain. It captures the
+// caller information, the location where this error is being returned, but doesn't require
+// any other information.
 func Chain(err error) error {
 	if err == nil {
 		return nil
@@ -67,6 +72,7 @@ func Chain(err error) error {
 	return newChainedError(err, nil, callerFunc())
 }
 
+// ChainWith chains the given error with an additional message.
 func ChainWith(err error, message string) error {
 	if err == nil {
 		return nil
@@ -74,6 +80,7 @@ func ChainWith(err error, message string) error {
 	return newChainedError(err, errors.New(message), callerFunc())
 }
 
+// ChainWithf is identical to ChainWith, but allows formatted messages.
 func ChainWithf(err error, format string, args ...interface{}) error {
 	if err == nil {
 		return nil
@@ -81,6 +88,7 @@ func ChainWithf(err error, format string, args ...interface{}) error {
 	return newChainedError(err, fmt.Errorf(format, args...), callerFunc())
 }
 
+// IterChain is an iterator of all the errors in the chain.
 func IterChain(err error) iter.Seq[error] {
 	return func(yield func(error) bool) {
 		for {
