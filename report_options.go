@@ -5,6 +5,11 @@ import (
 	"os"
 )
 
+var defaultReportOptions = ReportOptions{
+	reporter:   DefaultReporter,
+	terminater: exitTerminator(1),
+}
+
 type ReportOptions struct {
 	reporter   func(w io.Writer, err error) error
 	terminater func(err error)
@@ -12,11 +17,15 @@ type ReportOptions struct {
 
 type ReportOption func(*ReportOptions)
 
+func exitTerminator(status int) func(err error) {
+	return func(err error) {
+		os.Exit(status)
+	}
+}
+
 func ExitWithStatus(status int) ReportOption {
 	return func(o *ReportOptions) {
-		o.terminater = func(err error) {
-			os.Exit(status)
-		}
+		o.terminater = exitTerminator(1)
 	}
 }
 
