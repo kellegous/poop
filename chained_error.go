@@ -8,15 +8,15 @@ import (
 )
 
 type chainedError struct {
-	Caller
-	Current error
+	caller
+	current error
 	next    error
 }
 
 func (e *chainedError) Error() string {
 	for err := range IterChain(e) {
 		if cerr, ok := err.(*chainedError); ok {
-			if c := cerr.Current; c != nil {
+			if c := cerr.current; c != nil {
 				return c.Error()
 			}
 		} else {
@@ -33,11 +33,11 @@ func (e *chainedError) Unwrap() error {
 func newChainedError(
 	next error,
 	current error,
-	caller Caller,
+	caller caller,
 ) error {
 	return &chainedError{
-		Caller:  caller,
-		Current: current,
+		caller:  caller,
+		current: current,
 		next:    next,
 	}
 }
@@ -110,8 +110,8 @@ func Flatten(err error) error {
 		}
 		if cerr, ok := e.(*chainedError); ok {
 			buf.WriteString(fmt.Sprintf("(%s:%d)", pf(cerr.File), cerr.Line))
-			if cerr.Current != nil {
-				buf.WriteString(fmt.Sprintf(" %s", cerr.Current.Error()))
+			if cerr.current != nil {
+				buf.WriteString(fmt.Sprintf(" %s", cerr.current.Error()))
 			}
 		} else {
 			buf.WriteString(e.Error())

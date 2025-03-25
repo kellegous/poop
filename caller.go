@@ -2,22 +2,22 @@ package poop
 
 import "runtime"
 
-type Caller struct {
+type caller struct {
 	File string
 	Line int
 }
 
 var callerFunc = defaultCallerFunc
 
-func defaultCallerFunc() Caller {
+func defaultCallerFunc() caller {
 	_, file, line, _ := runtime.Caller(2)
-	return Caller{
+	return caller{
 		File: file,
 		Line: line,
 	}
 }
 
-func setCallerFunc(f func() Caller) func() {
+func setCallerFunc(f func() caller) func() {
 	orig := callerFunc
 	callerFunc = f
 	return func() {

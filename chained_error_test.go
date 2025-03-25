@@ -58,11 +58,11 @@ func TestError(t *testing.T) {
 	}
 }
 
-func newSerialCaller() func() Caller {
+func newSerialCaller() func() caller {
 	i := 0
-	return func() Caller {
+	return func() caller {
 		i++
-		return Caller{
+		return caller{
 			File: fmt.Sprintf("file-%d", i),
 			Line: i,
 		}
@@ -81,9 +81,9 @@ func isSameError(a, b error) bool {
 	if aok != bok {
 		return false
 	} else if aok {
-		return isSameError(ca.Current, cb.Current) &&
+		return isSameError(ca.current, cb.current) &&
 			isSameError(ca.next, cb.next) &&
-			ca.Caller == cb.Caller
+			ca.caller == cb.caller
 	}
 
 	return a.Error() == b.Error()
@@ -101,11 +101,11 @@ func TestChain(t *testing.T) {
 				return New("egad")
 			},
 			&chainedError{
-				Caller: Caller{
+				caller: caller{
 					File: "file-1",
 					Line: 1,
 				},
-				Current: errors.New("egad"),
+				current: errors.New("egad"),
 				next:    nil,
 			},
 		},
@@ -129,11 +129,11 @@ func TestChain(t *testing.T) {
 				return New("egad")
 			},
 			&chainedError{
-				Caller: Caller{
+				caller: caller{
 					File: "file-1",
 					Line: 1,
 				},
-				Current: errors.New("egad"),
+				current: errors.New("egad"),
 				next:    nil,
 			},
 		},
@@ -143,11 +143,11 @@ func TestChain(t *testing.T) {
 				return Newf("egad %d", 1)
 			},
 			&chainedError{
-				Caller: Caller{
+				caller: caller{
 					File: "file-1",
 					Line: 1,
 				},
-				Current: errors.New("egad 1"),
+				current: errors.New("egad 1"),
 				next:    nil,
 			},
 		},
@@ -157,11 +157,11 @@ func TestChain(t *testing.T) {
 				return Chain(errors.New("egad"))
 			},
 			&chainedError{
-				Caller: Caller{
+				caller: caller{
 					File: "file-1",
 					Line: 1,
 				},
-				Current: errors.New("egad"),
+				current: errors.New("egad"),
 				next:    nil,
 			},
 		},
@@ -171,16 +171,16 @@ func TestChain(t *testing.T) {
 				return Chain(New("egad"))
 			},
 			&chainedError{
-				Caller: Caller{
+				caller: caller{
 					File: "file-2",
 					Line: 2,
 				},
 				next: &chainedError{
-					Caller: Caller{
+					caller: caller{
 						File: "file-1",
 						Line: 1,
 					},
-					Current: errors.New("egad"),
+					current: errors.New("egad"),
 					next:    nil,
 				},
 			},

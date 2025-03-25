@@ -28,7 +28,7 @@ func BeReady(opts ...ReportOption) SHTF {
 	}
 }
 
-func hitFan(err error, opts *ReportOptions, caller Caller) {
+func hitFan(err error, opts *ReportOptions, caller caller) {
 	err = newChainedError(err, errors.New("the 💩 hath hit the fan"), caller)
 	if err := opts.reporter(os.Stderr, err); err != nil {
 		panic(err)

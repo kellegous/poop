@@ -85,7 +85,7 @@ func NewDefaultReporter(
 		for e := range IterChain(err) {
 			if chErr, ok := e.(*chainedError); ok {
 				var msg string
-				if cur := chErr.Current; cur != nil {
+				if cur := chErr.current; cur != nil {
 					msg = cur.Error()
 				}
 
