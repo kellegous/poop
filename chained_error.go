@@ -117,7 +117,8 @@ func Flatten(err error) error {
 			buf.WriteString(" → ")
 		}
 		if cerr, ok := e.(*chainedError); ok {
-			buf.WriteString(fmt.Sprintf("(%s:%d)", pf(cerr.File), cerr.Line))
+			f := cerr.frame()
+			buf.WriteString(fmt.Sprintf("%s(%s:%d)", f.function, pf(f.file), f.line))
 			if cerr.current != nil {
 				buf.WriteString(fmt.Sprintf(" %s", cerr.current.Error()))
 			}

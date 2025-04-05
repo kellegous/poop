@@ -43,17 +43,19 @@ func PathLastNSegments(n int) func(string) string {
 }
 
 type linkLine struct {
-	path    string
-	line    string
-	message string
+	function string
+	path     string
+	line     string
+	message  string
 }
 
 func (l *linkLine) pathWidth() int {
-	return len(l.path) + len(l.line) + 2
+	return len(l.function) + len(l.path) + len(l.line) + 3
 }
 
 func (l *linkLine) render(
 	pathWidth int,
+	forFunc func(...any) string,
 	forPath func(...any) string,
 	forLine func(...any) string,
 	forMsg func(...any) string,
@@ -68,7 +70,8 @@ func (l *linkLine) render(
 	}
 
 	return fmt.Sprintf(
-		"%s:%s%s %s",
+		"%s %s:%s%s %s",
+		forFunc(l.function),
 		forPath(l.path),
 		forLine(l.line),
 		strings.Repeat(" ", pathWidth-l.pathWidth()),
@@ -91,16 +94,20 @@ func NewDefaultReporter(
 					msg = "↓"
 				}
 
+				// TODO(kellegous): Need to add function to reporter
+				f := chErr.frame()
 				lines = append(lines, &linkLine{
-					path:    pathFormatter(chErr.File),
-					line:    fmt.Sprintf("%d", chErr.Line),
-					message: msg,
+					function: f.function,
+					path:     pathFormatter(f.file),
+					line:     fmt.Sprintf("%d", f.line),
+					message:  msg,
 				})
 			} else {
 				lines = append(lines, &linkLine{
-					path:    pathFormatter(""),
-					line:    "",
-					message: e.Error(),
+					function: "",
+					path:     pathFormatter(""),
+					line:     "",
+					message:  e.Error(),
 				})
 			}
 		}
@@ -110,16 +117,18 @@ func NewDefaultReporter(
 			offset = max(offset, l.pathWidth())
 		}
 
-		banner := color.New(color.FgBlack, color.BgRed).SprintFunc()
+		banner := color.New(color.FgWhite, color.BgRed).SprintFunc()
 		if _, err := fmt.Fprintf(w, "%s\n", banner(" Fatal Error ")); err != nil {
+			return err
 		}
 
+		forFunc := color.New(color.FgCyan).SprintFunc()
 		forPath := color.New(color.FgGreen).SprintFunc()
 		forLine := color.New(color.FgYellow).SprintFunc()
 		forMsg := color.New().SprintFunc()
 
 		for _, l := range lines {
-			if _, err := fmt.Fprintf(w, "%s\n", l.render(offset, forPath, forLine, forMsg)); err != nil {
+			if _, err := fmt.Fprintf(w, "%s\n", l.render(offset, forFunc, forPath, forLine, forMsg)); err != nil {
 				return err
 			}
 		}
