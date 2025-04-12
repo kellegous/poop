@@ -71,7 +71,7 @@ func (t *table) render(
 	for _, row := range t.rows {
 		msg := row.message
 		if len(row.message) > t.cols[2] {
-			msg = msg[:t.cols[2]] + "..."
+			msg = msg[:t.cols[2]-3] + "..."
 		}
 		if !row.hasFrame() {
 			if _, err := fmt.Fprintf(

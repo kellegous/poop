@@ -3,7 +3,7 @@ package main
 import "github.com/kellegous/poop"
 
 func foo() error {
-	return poop.Chain(bar())
+	return poop.ChainWith(bar(), "this is a really long message that is meant to test the table formatter's ability to truncate text")
 }
 
 func bar() error {
