@@ -11,11 +11,13 @@ var defaultReportOptions = ReportOptions{
 }
 
 type ReportOptions struct {
-	reporter   func(w io.Writer, err error) error
+	reporter   Reporter
 	terminater func(err error)
 }
 
 type ReportOption func(*ReportOptions)
+
+type Reporter func(w io.Writer, err error) error
 
 func exitTerminator(status int) func(err error) {
 	return func(err error) {
@@ -37,7 +39,7 @@ func Panic() ReportOption {
 	}
 }
 
-func UsingReporter(reporter func(w io.Writer, err error) error) ReportOption {
+func UsingReporter(reporter Reporter) ReportOption {
 	return func(o *ReportOptions) {
 		o.reporter = reporter
 	}
