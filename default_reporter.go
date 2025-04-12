@@ -33,7 +33,7 @@ func PathLastNSegments(n int) PathFormatter {
 			return unknownPathText
 		}
 		pfx := path
-		for i := 0; i < n; i++ {
+		for range n {
 			idx := strings.LastIndex(pfx, "/")
 			if idx == -1 {
 				break
