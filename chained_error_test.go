@@ -235,3 +235,66 @@ func TestChain(t *testing.T) {
 		})
 	}
 }
+
+type customError struct {
+	msg string
+}
+
+func (e *customError) Error() string {
+	return e.msg
+}
+
+var theError = &customError{msg: "theError"}
+
+func TestIs(t *testing.T) {
+	tests := []struct {
+		Name  string
+		Error error
+		Check func(t *testing.T, err error)
+	}{
+		{
+			"single",
+			Chain(theError),
+			func(t *testing.T, err error) {
+				if !errors.Is(err, theError) {
+					t.Errorf("expected %v to be %v", err, theError)
+				}
+			},
+		},
+		{
+			"single_as",
+			Chain(theError),
+			func(t *testing.T, err error) {
+				var cerr *customError
+				if !errors.As(err, &cerr) || cerr.msg != "theError" {
+					t.Errorf("expected %v to be %v", err, theError)
+				}
+			},
+		},
+		{
+			"double",
+			Chain(Chain(theError)),
+			func(t *testing.T, err error) {
+				if !errors.Is(err, theError) {
+					t.Errorf("expected %v to be %v", err, theError)
+				}
+			},
+		},
+		{
+			"double_as",
+			Chain(Chain(theError)),
+			func(t *testing.T, err error) {
+				var cerr *customError
+				if !errors.As(err, &cerr) || cerr.msg != "theError" {
+					t.Errorf("expected %v to be %v", err, theError)
+				}
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Check(t, test.Error)
+		})
+	}
+}

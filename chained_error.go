@@ -27,7 +27,10 @@ func (e *chainedError) Error() string {
 }
 
 func (e *chainedError) Unwrap() error {
-	return e.next
+	if n := e.next; n != nil {
+		return n
+	}
+	return e.current
 }
 
 func newChainedError(
