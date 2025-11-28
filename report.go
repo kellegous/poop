@@ -1,7 +1,6 @@
 package poop
 
 import (
-	"errors"
 	"os"
 )
 
@@ -35,7 +34,7 @@ func Configure(opts ...ReportOption) {
 }
 
 func hitFan(err error, opts *ReportOptions, caller caller) {
-	err = newChainedError(err, errors.New("the 💩 hath hit the fan"), caller)
+	err = newChainedError(err, "the 💩 hath hit the fan", caller)
 	if err := opts.reporter(os.Stderr, err); err != nil {
 		panic(err)
 	}

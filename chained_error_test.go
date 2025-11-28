@@ -88,7 +88,7 @@ func isSameError(a, b error) bool {
 	if aok != bok {
 		return false
 	} else if aok {
-		return isSameError(ca.current, cb.current) &&
+		return ca.message == cb.message &&
 			isSameError(ca.next, cb.next) &&
 			ca.caller.frame() == cb.caller.frame()
 	}
@@ -108,7 +108,7 @@ func describe(err error) string {
 	f := c.caller.frame()
 	return fmt.Sprintf(
 		"chained(current: %s, caller: [%s,%s,%d], next: %s)",
-		describe(c.current),
+		c.message,
 		f.function,
 		f.file,
 		f.line,
@@ -138,7 +138,7 @@ func TestChain(t *testing.T) {
 					file:     "file-1",
 					line:     1,
 				}),
-				current: errors.New("egad"),
+				message: "egad",
 				next:    nil,
 			},
 		},
@@ -167,7 +167,7 @@ func TestChain(t *testing.T) {
 					file:     "file-1",
 					line:     1,
 				}),
-				current: errors.New("egad"),
+				message: "egad",
 				next:    nil,
 			},
 		},
@@ -182,7 +182,7 @@ func TestChain(t *testing.T) {
 					file:     "file-1",
 					line:     1,
 				}),
-				current: errors.New("egad 1"),
+				message: "egad 1",
 				next:    nil,
 			},
 		},
@@ -197,8 +197,8 @@ func TestChain(t *testing.T) {
 					file:     "file-1",
 					line:     1,
 				}),
-				current: errors.New("egad"),
-				next:    nil,
+				message: "",
+				next:    errors.New("egad"),
 			},
 		},
 		{
@@ -218,7 +218,7 @@ func TestChain(t *testing.T) {
 						file:     "file-1",
 						line:     1,
 					}),
-					current: errors.New("egad"),
+					message: "egad",
 					next:    nil,
 				},
 			},

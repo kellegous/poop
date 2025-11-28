@@ -9,15 +9,15 @@ import (
 
 type chainedError struct {
 	caller
-	current error
+	message string
 	next    error
 }
 
 func (e *chainedError) Error() string {
 	for err := range IterChain(e) {
 		if cerr, ok := err.(*chainedError); ok {
-			if c := cerr.current; c != nil {
-				return c.Error()
+			if m := cerr.message; m != "" {
+				return m
 			}
 		} else {
 			return err.Error()
@@ -27,37 +27,29 @@ func (e *chainedError) Error() string {
 }
 
 func (e *chainedError) Unwrap() error {
-	if n := e.next; n != nil {
-		return n
-	}
-	return e.current
+	return e.next
 }
 
 func newChainedError(
 	next error,
-	current error,
+	message string,
 	caller caller,
 ) error {
 	return &chainedError{
 		caller:  caller,
-		current: current,
+		message: message,
 		next:    next,
 	}
 }
 
-func isChainedError(err error) bool {
-	_, ok := err.(*chainedError)
-	return ok
-}
-
 // New creates a leaf error with caller information. This is the poop equivalent to `errors.New`.
 func New(message string) error {
-	return newChainedError(nil, errors.New(message), callerFunc())
+	return newChainedError(nil, message, callerFunc())
 }
 
 // Newf is identical to New, but allows formatted messages.
 func Newf(format string, args ...interface{}) error {
-	return newChainedError(nil, fmt.Errorf(format, args...), callerFunc())
+	return newChainedError(nil, fmt.Sprintf(format, args...), callerFunc())
 }
 
 // Chain chains the given error. This is the most common way to chain. It captures the
@@ -66,13 +58,8 @@ func Newf(format string, args ...interface{}) error {
 func Chain(err error) error {
 	if err == nil {
 		return nil
-	} else if !isChainedError(err) {
-		// we don't have caller information on the original error,
-		// so we're just going to give the current caller information
-		// to the top of the chain.
-		return newChainedError(errors.Unwrap(err), err, callerFunc())
 	}
-	return newChainedError(err, nil, callerFunc())
+	return newChainedError(err, "", callerFunc())
 }
 
 // ChainWith chains the given error with an additional message.
@@ -80,7 +67,7 @@ func ChainWith(err error, message string) error {
 	if err == nil {
 		return nil
 	}
-	return newChainedError(err, errors.New(message), callerFunc())
+	return newChainedError(err, message, callerFunc())
 }
 
 // ChainWithf is identical to ChainWith, but allows formatted messages.
@@ -88,7 +75,7 @@ func ChainWithf(err error, format string, args ...interface{}) error {
 	if err == nil {
 		return nil
 	}
-	return newChainedError(err, fmt.Errorf(format, args...), callerFunc())
+	return newChainedError(err, fmt.Sprintf(format, args...), callerFunc())
 }
 
 // IterChain is an iterator of all the errors in the chain.
@@ -122,8 +109,8 @@ func Flatten(err error) error {
 		if cerr, ok := e.(*chainedError); ok {
 			f := cerr.frame()
 			buf.WriteString(fmt.Sprintf("%s(%s:%d)", f.function, pf(f.file), f.line))
-			if cerr.current != nil {
-				buf.WriteString(fmt.Sprintf(" %s", cerr.current.Error()))
+			if m := cerr.message; m != "" {
+				buf.WriteString(fmt.Sprintf(" %s", m))
 			}
 		} else {
 			buf.WriteString(e.Error())
