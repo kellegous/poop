@@ -30,7 +30,7 @@ if err != nil {
 }
 ```
 
-To terminate the program do to an error,
+To terminate the program due to an error,
 
 ```go
 if err != nil {
