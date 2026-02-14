@@ -31,8 +31,28 @@ func (e *ChainedError) Unwrap() error {
 	return e.next
 }
 
+// Frame returns the frame information for the caller of the error.
+// This will be the call frame for the chain link.
 func (e *ChainedError) Frame() Frame {
 	return e.caller.frame()
+}
+
+// Message returns the message that was provided when the error
+// was chained. The message is optional and may be empty.
+func (e *ChainedError) Message() string {
+	return e.message
+}
+
+// RootCause returns the first error in the chain.
+func (e *ChainedError) RootCause() error {
+	var err error
+	for {
+		next := errors.Unwrap(err)
+		if next == nil {
+			return err
+		}
+		err = next
+	}
 }
 
 func newChainedError(
