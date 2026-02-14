@@ -3,25 +3,25 @@ package poop
 import "runtime"
 
 type caller interface {
-	frame() frame
+	frame() Frame
 }
 
 type runtimeCaller uintptr
 
-func (c runtimeCaller) frame() frame {
+func (c runtimeCaller) frame() Frame {
 	pcs := []uintptr{uintptr(c)}
 	f, _ := runtime.CallersFrames(pcs).Next()
-	return frame{
-		function: f.Function,
-		file:     f.File,
-		line:     f.Line,
+	return Frame{
+		Function: f.Function,
+		File:     f.File,
+		Line:     f.Line,
 	}
 }
 
-type frame struct {
-	function string
-	file     string
-	line     int
+type Frame struct {
+	Function string
+	File     string
+	Line     int
 }
 
 var callerFunc = defaultCallerFunc

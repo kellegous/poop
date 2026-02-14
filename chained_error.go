@@ -7,15 +7,16 @@ import (
 	"iter"
 )
 
-type chainedError struct {
+// ChainedError represents a link in the causal chain of errors.
+type ChainedError struct {
 	caller
 	message string
 	next    error
 }
 
-func (e *chainedError) Error() string {
+func (e *ChainedError) Error() string {
 	for err := range IterChain(e) {
-		if cerr, ok := err.(*chainedError); ok {
+		if cerr, ok := err.(*ChainedError); ok {
 			if m := cerr.message; m != "" {
 				return m
 			}
@@ -26,8 +27,12 @@ func (e *chainedError) Error() string {
 	panic("nil error chain")
 }
 
-func (e *chainedError) Unwrap() error {
+func (e *ChainedError) Unwrap() error {
 	return e.next
+}
+
+func (e *ChainedError) Frame() Frame {
+	return e.caller.frame()
 }
 
 func newChainedError(
@@ -35,7 +40,7 @@ func newChainedError(
 	message string,
 	caller caller,
 ) error {
-	return &chainedError{
+	return &ChainedError{
 		caller:  caller,
 		message: message,
 		next:    next,
@@ -79,6 +84,9 @@ func ChainWithf(err error, format string, args ...interface{}) error {
 }
 
 // IterChain is an iterator of all the errors in the chain.
+//
+// TODO(kellegous): Since ChainError is not exported, this should
+// be changed to a method on ChainedError.
 func IterChain(err error) iter.Seq[error] {
 	return func(yield func(error) bool) {
 		for {
@@ -106,9 +114,9 @@ func Flatten(err error) error {
 		if buf.Len() > 0 {
 			buf.WriteString(" → ")
 		}
-		if cerr, ok := e.(*chainedError); ok {
+		if cerr, ok := e.(*ChainedError); ok {
 			f := cerr.frame()
-			buf.WriteString(fmt.Sprintf("%s(%s:%d)", f.function, pf(f.file), f.line))
+			buf.WriteString(fmt.Sprintf("%s(%s:%d)", f.Function, pf(f.File), f.Line))
 			if m := cerr.message; m != "" {
 				buf.WriteString(fmt.Sprintf(" %s", m))
 			}

@@ -200,7 +200,7 @@ func compressLinks(links []*link) []*link {
 func (o *DefaultReporterOptions) render(w io.Writer, err error) error {
 	var links []*link
 	for e := range IterChain(err) {
-		if chErr, ok := e.(*chainedError); ok {
+		if chErr, ok := e.(*ChainedError); ok {
 			var msg string
 			if cur := chErr.message; cur != "" {
 				msg = cur
@@ -208,8 +208,8 @@ func (o *DefaultReporterOptions) render(w io.Writer, err error) error {
 
 			f := chErr.frame()
 			links = append(links, &link{
-				funcValue: o.funcFormatter(f.function),
-				pathValue: o.pathFormatter(f.file, f.line),
+				funcValue: o.funcFormatter(f.Function),
+				pathValue: o.pathFormatter(f.File, f.Line),
 				message:   msg,
 				isChain:   true,
 			})

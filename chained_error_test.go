@@ -60,11 +60,11 @@ func TestError(t *testing.T) {
 
 type serialCaller int
 
-func (c serialCaller) frame() frame {
-	return frame{
-		function: fmt.Sprintf("func-%d", c),
-		file:     fmt.Sprintf("file-%d", c),
-		line:     int(c),
+func (c serialCaller) frame() Frame {
+	return Frame{
+		Function: fmt.Sprintf("func-%d", c),
+		File:     fmt.Sprintf("file-%d", c),
+		Line:     int(c),
 	}
 }
 
@@ -83,8 +83,8 @@ func isSameError(a, b error) bool {
 		return false
 	}
 
-	ca, aok := a.(*chainedError)
-	cb, bok := b.(*chainedError)
+	ca, aok := a.(*ChainedError)
+	cb, bok := b.(*ChainedError)
 	if aok != bok {
 		return false
 	} else if aok {
@@ -101,7 +101,7 @@ func describe(err error) string {
 		return "nil"
 	}
 
-	c, ok := err.(*chainedError)
+	c, ok := err.(*ChainedError)
 	if !ok {
 		return fmt.Sprintf("error(%s)", err.Error())
 	}
@@ -109,16 +109,16 @@ func describe(err error) string {
 	return fmt.Sprintf(
 		"chained(current: %s, caller: [%s,%s,%d], next: %s)",
 		c.message,
-		f.function,
-		f.file,
-		f.line,
+		f.Function,
+		f.File,
+		f.Line,
 		describe(c.next))
 }
 
-type mockCaller frame
+type mockCaller Frame
 
-func (c mockCaller) frame() frame {
-	return frame(c)
+func (c mockCaller) frame() Frame {
+	return Frame(c)
 }
 
 func TestChain(t *testing.T) {
@@ -132,11 +132,11 @@ func TestChain(t *testing.T) {
 			func() error {
 				return New("egad")
 			},
-			&chainedError{
-				caller: mockCaller(frame{
-					function: "func-1",
-					file:     "file-1",
-					line:     1,
+			&ChainedError{
+				caller: mockCaller(Frame{
+					Function: "func-1",
+					File:     "file-1",
+					Line:     1,
 				}),
 				message: "egad",
 				next:    nil,
@@ -161,11 +161,11 @@ func TestChain(t *testing.T) {
 			func() error {
 				return New("egad")
 			},
-			&chainedError{
-				caller: mockCaller(frame{
-					function: "func-1",
-					file:     "file-1",
-					line:     1,
+			&ChainedError{
+				caller: mockCaller(Frame{
+					Function: "func-1",
+					File:     "file-1",
+					Line:     1,
 				}),
 				message: "egad",
 				next:    nil,
@@ -176,11 +176,11 @@ func TestChain(t *testing.T) {
 			func() error {
 				return Newf("egad %d", 1)
 			},
-			&chainedError{
-				caller: mockCaller(frame{
-					function: "func-1",
-					file:     "file-1",
-					line:     1,
+			&ChainedError{
+				caller: mockCaller(Frame{
+					Function: "func-1",
+					File:     "file-1",
+					Line:     1,
 				}),
 				message: "egad 1",
 				next:    nil,
@@ -191,11 +191,11 @@ func TestChain(t *testing.T) {
 			func() error {
 				return Chain(errors.New("egad"))
 			},
-			&chainedError{
-				caller: mockCaller(frame{
-					function: "func-1",
-					file:     "file-1",
-					line:     1,
+			&ChainedError{
+				caller: mockCaller(Frame{
+					Function: "func-1",
+					File:     "file-1",
+					Line:     1,
 				}),
 				message: "",
 				next:    errors.New("egad"),
@@ -206,17 +206,17 @@ func TestChain(t *testing.T) {
 			func() error {
 				return Chain(New("egad"))
 			},
-			&chainedError{
-				caller: mockCaller(frame{
-					function: "func-2",
-					file:     "file-2",
-					line:     2,
+			&ChainedError{
+				caller: mockCaller(Frame{
+					Function: "func-2",
+					File:     "file-2",
+					Line:     2,
 				}),
-				next: &chainedError{
-					caller: mockCaller(frame{
-						function: "func-1",
-						file:     "file-1",
-						line:     1,
+				next: &ChainedError{
+					caller: mockCaller(Frame{
+						Function: "func-1",
+						File:     "file-1",
+						Line:     1,
 					}),
 					message: "egad",
 					next:    nil,
