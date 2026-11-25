@@ -90,7 +90,7 @@ func isSameError(a, b error) bool {
 	} else if aok {
 		return ca.message == cb.message &&
 			isSameError(ca.next, cb.next) &&
-			ca.caller.frame() == cb.caller.frame()
+			ca.frame() == cb.frame()
 	}
 
 	return a.Error() == b.Error()
@@ -105,7 +105,7 @@ func describe(err error) string {
 	if !ok {
 		return fmt.Sprintf("error(%s)", err.Error())
 	}
-	f := c.caller.frame()
+	f := c.frame()
 	return fmt.Sprintf(
 		"chained(current: %s, caller: [%s,%s,%d], next: %s)",
 		c.message,

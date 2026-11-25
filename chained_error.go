@@ -34,7 +34,7 @@ func (e *ChainedError) Unwrap() error {
 // Frame returns the frame information for the caller of the error.
 // This will be the call frame for the chain link.
 func (e *ChainedError) Frame() Frame {
-	return e.caller.frame()
+	return e.frame()
 }
 
 // Message returns the message that was provided when the error
@@ -144,9 +144,9 @@ func Flatten(err error) error {
 		}
 		if cerr, ok := e.(*ChainedError); ok {
 			f := cerr.frame()
-			buf.WriteString(fmt.Sprintf("%s(%s:%d)", f.Function, pf(f.File), f.Line))
+			fmt.Fprintf(&buf, "%s(%s:%d)", f.Function, pf(f.File), f.Line)
 			if m := cerr.message; m != "" {
-				buf.WriteString(fmt.Sprintf(" %s", m))
+				fmt.Fprintf(&buf, " %s", m)
 			}
 		} else {
 			buf.WriteString(e.Error())
