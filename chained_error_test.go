@@ -236,6 +236,48 @@ func TestChain(t *testing.T) {
 	}
 }
 
+func TestChainVal(t *testing.T) {
+	tests := []struct {
+		Name  string
+		Value int
+		Error error
+	}{
+		{"nil error", 42, nil},
+		{"unchained error", 42, errors.New("egad")},
+		{"chained error", 0, New("egad")},
+	}
+
+	for _, test := range tests {
+		t.Run(test.Name, func(t *testing.T) {
+			done := setCallerFunc(newSerialCaller())
+			defer done()
+
+			val, err := ChainVal(test.Value, test.Error)
+			if val != test.Value {
+				t.Errorf("expected value %d but got %d", test.Value, val)
+			}
+
+			var expected error
+			if test.Error != nil {
+				expected = &ChainedError{
+					caller: mockCaller(Frame{
+						Function: "func-1",
+						File:     "file-1",
+						Line:     1,
+					}),
+					next: test.Error,
+				}
+			}
+			if !isSameError(err, expected) {
+				t.Fatalf("expected:\n%s\nbut got\n%s", describe(expected), describe(err))
+			}
+			if errors.Unwrap(err) != test.Error {
+				t.Errorf("expected ChainVal to wrap the original error %v", test.Error)
+			}
+		})
+	}
+}
+
 type customError struct {
 	msg string
 }

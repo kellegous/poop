@@ -87,6 +87,14 @@ func Chain(err error) error {
 	return newChainedError(err, "", callerFunc())
 }
 
+// ChainVal chains the given error with an additional value.
+func ChainVal[T any](val T, err error) (T, error) {
+	if err == nil {
+		return val, nil
+	}
+	return val, newChainedError(err, "", callerFunc())
+}
+
 // ChainWith chains the given error with an additional message.
 func ChainWith(err error, message string) error {
 	if err == nil {
