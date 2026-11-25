@@ -111,6 +111,38 @@ func ChainWithf(err error, format string, args ...interface{}) error {
 	return newChainedError(err, fmt.Sprintf(format, args...), callerFunc())
 }
 
+// Fling chains the given error and captures the caller information.
+func Fling(err error) error {
+	if err == nil {
+		return nil
+	}
+	return newChainedError(err, "", callerFunc())
+}
+
+// FlingVal chains the given error and returns the value unchanged.
+func FlingVal[T any](val T, err error) (T, error) {
+	if err == nil {
+		return val, nil
+	}
+	return val, newChainedError(err, "", callerFunc())
+}
+
+// FlingWith chains the given error with an additional message.
+func FlingWith(err error, message string) error {
+	if err == nil {
+		return nil
+	}
+	return newChainedError(err, message, callerFunc())
+}
+
+// FlingWithf is identical to FlingWith, but allows formatted messages.
+func FlingWithf(err error, format string, args ...interface{}) error {
+	if err == nil {
+		return nil
+	}
+	return newChainedError(err, fmt.Sprintf(format, args...), callerFunc())
+}
+
 // IterChain is an iterator of all the errors in the chain.
 //
 // TODO(kellegous): Since ChainError is not exported, this should
